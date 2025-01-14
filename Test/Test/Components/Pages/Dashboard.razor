@@ -1,0 +1,21 @@
+﻿@page "/Dashboard"
+<h3>Dashboard</h3>
+<div class="d-flex flex-row justify-content-between">
+    <MudGrid Spacing="@Spacing" Justify="Justify.Center">
+        <MudItem>
+            <MudPaper Class="d-flex align-center justify-center mud-width-full py-8" Height="140px" Width="500px"> Hello </MudPaper>
+        </MudItem>
+        <MudItem>
+            <MudPaper Height="140px" Width="500px" />
+        </MudItem>
+        <MudItem>
+            <MudPaper Height="140px" Width="500px" />
+        </MudItem>
+    </MudGrid>
+    @code {
+        public int Spacing { get; set; } = 6;
+    }
+</div>
+@code {
+
+}
