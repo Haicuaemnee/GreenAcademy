@@ -1,0 +1,128 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+@inject IDialogService DialogService
+
+
+<PageTitle>Home</PageTitle>
+@* Needed for dialogs *@
+<MudDialogProvider @rendermode="InteractiveServer" />
+
+<div class="mb-6">
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Open_Create_Dialog">Add</MudButton>
+</div>
+
+<MudTable Items="@Students" Hover= "true" Breakpoint="Breakpoint.Sm" LoadingProgressColor="Color.Info">
+    <HeaderContent>
+        <MudTh> Mã Sinh Viên</MudTh>
+        <MudTh> Lớp Học</MudTh>
+        <MudTh> Họ và Tên</MudTh>
+        <MudTh> Điểm Toán</MudTh>
+        <MudTh> Điểm Anh</MudTh>
+        <MudTh> Điểm Văn</MudTh>
+        <MudTh> Điểm Tin</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.ID</MudTd>
+        <MudTd>@context.Class</MudTd>
+        <MudTd>@context.Name</MudTd>
+        <MudTd>@context.Toan</MudTd>
+        <MudTd>@context.Anh</MudTd>
+        <MudTd>@context.Van</MudTd>
+        <MudTd>@context.Tin</MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit" OnClick="@(() => Open_edit_dialog(context))" />
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="@Color.Secondary" aria-label="delete" OnClick="@(() => Open_delete_dialog(context))" />
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+<MudMessageBox @ref="_create_box" Title="Thêm Học Viên" CancelText="Cancel">
+    <MessageContent>
+        <div class="d-flex flex-column" style="width: 500px;">
+            <MudTextField @bind-Value="new_student.ID" Label="ID" ShrinkLabel Variant="Variant.Outlined" />
+            <MudTextField @bind-Value="new_student.Class" Label="Tên lớp" ShrinkLabel Variant="Variant.Outlined" />
+            <MudTextField @bind-Value="new_student.Name" Label="Họ và tên" ShrinkLabel Variant="Variant.Outlined" />
+            <div class="d-flex flex-row">
+                <MudNumericField @bind-Value="new_student.Toan" Class="me-3" Label="Điểm Toán" Min="0" Max="10" Variant="Variant.Outlined" />
+                <MudNumericField @bind-Value="new_student.Anh" Label="Điểm Anh" Min="0" Max="10" Variant="Variant.Outlined" />
+            </div>
+            <div class="d-flex flex-row">
+                <MudNumericField @bind-Value="new_student.Van" Class="me-3" Label="Điểm Văn" Min="0" Max="10" Variant="Variant.Outlined" />
+                <MudNumericField @bind-Value="new_student.Tin" Label="Điểm Tin" Min="0" Max="10" Variant="Variant.Outlined" />
+            </div>
+        </div>
+    </MessageContent>
+    <YesButton>
+        <MudButton Class="m-3" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">Create</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+@code {
+    class Student
+    {
+        public string ID { get; set; } = "";
+        public string Class { get; set; } = "";
+        public string Name { get; set; } = "";
+        public double Toan { get; set; }
+        public double Anh { get; set; } 
+        public double Van { get; set; }
+        public double Tin { get; set; }
+    }
+    List<Student> Students = [
+    new(){ID = "543825", Class="246E116", Name="Vu Trong Danh", Toan=8.2, Anh=6.3,Van=9.5,Tin=7.1},
+   new(){ID = "543826", Class="246E116", Name="Nguyễn Vinh Luân", Toan=6.2, Anh=8.3,Van=8.5,Tin=9.1},
+   new(){ID = "543827", Class="246E116", Name="Hà Huy Thái", Toan=7.2, Anh=5.3,Van=7.5,Tin=5.1},
+   new(){ID = "543828", Class="246E116", Name="Nguyễn Văn Hải", Toan=5.2, Anh=9.3,Van=6.5,Tin=6.1},
+   new(){ID = "543829", Class="246E116", Name="Phan Bá Diệu", Toan=9.2, Anh=7.3,Van=5.5,Tin=8.1},
+    ];
+    private MudMessageBox _create_box=null!;
+    private Student new_student = new();
+    private async Task Open_Create_Dialog()
+    {
+        new_student.ID = "";
+        new_student.Class = "";
+        new_student.Name = "";
+        new_student.Toan = 0;
+        new_student.Anh = 0;
+        new_student.Van = 0;
+        new_student.Tin = 0;
+        bool? result = await _create_box.ShowAsync();
+        if(result==true)
+        {
+            //kiểm tra dữ liệu
+            if(string.IsNullOrEmpty(new_student.ID)||string.IsNullOrEmpty(new_student.Class)||string.IsNullOrEmpty(new_student.Name))
+            {
+                await DialogService.ShowMessageBox("Lỗi khi tạo dữ liệu mới", "Các trường dữ liệu ID, Class, Name không được để trống");
+                return;
+            }
+            if (Students.Any(Student=>Student.Name==new_student.Name))
+            {
+                await DialogService.ShowMessageBox("Lỗi khi tạo dữ liệu mới", "Student ID đã tồn tại");
+                return;
+            }
+            Students.Add(new Student()
+                {
+                    ID = new_student.ID,
+                    Class = new_student.Class,
+                    Name = new_student.Name,
+                    Toan = new_student.Toan,
+                    Anh = new_student.Anh,
+                    Van = new_student.Van,
+                    Tin = new_student.Tin,
+                });
+            StateHasChanged();
+
+        }
+    }
+    private async Task Open_delete_dialog(Student student)
+    {
+        Students.Remove(student);
+        StateHasChanged();
+    }
+    private async Task Open_edit_dialog(Student student)
+    {
+        student.Tin = 0;
+        StateHasChanged();
+    }
+}
