@@ -31,17 +31,36 @@
         <MudTd>@context.Van</MudTd>
         <MudTd>@context.Tin</MudTd>
         <MudTd>
-            <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit" OnClick="@(() => Open_edit_dialog(context))" />
-            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="@Color.Secondary" aria-label="delete" OnClick="@(() => Open_delete_dialog(context))" />
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit" OnClick="@(() => OpenEditDialog(context))" />
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="@Color.Secondary" aria-label="delete" OnClick="@(() => OpenDeleteDialog(context))" />
         </MudTd>
     </RowTemplate>
 </MudTable>
-
+<MudMessageBox @ref="_editBox" Title="Chỉnh sửa thông tin học viên" CancelText="Cancel">
+    <MessageContent>
+        <div class="d-flex flex-column" style="width: 500px;">
+            <MudTextField @bind-Value="editStudent.ID"  ReadOnly Label="ID" ShrinkLabel Variant="Variant.Outlined" />
+            <MudTextField @bind-Value="editStudent.Class"ReadOnly Label="Tên lớp" ShrinkLabel Variant="Variant.Outlined" />
+            <MudTextField @bind-Value="editStudent.Name"ReadOnly Label="Họ và tên" ShrinkLabel Variant="Variant.Outlined" />
+            <div class="d-flex flex-row">
+                <MudNumericField @bind-Value="editStudent.Toan" Class="me-3" Label="Điểm Toán" Min="0" Max="10" Variant="Variant.Outlined" />
+                <MudNumericField @bind-Value="editStudent.Anh" Label="Điểm Anh" Min="0" Max="10" Variant="Variant.Outlined" />
+            </div>
+            <div class="d-flex flex-row">
+                <MudNumericField @bind-Value="editStudent.Van" Class="me-3" Label="Điểm Văn" Min="0" Max="10" Variant="Variant.Outlined" />
+                <MudNumericField @bind-Value="editStudent.Tin" Label="Điểm Tin" Min="0" Max="10" Variant="Variant.Outlined" />
+            </div>
+        </div>
+    </MessageContent>
+    <YesButton>
+        <MudButton Class="m-3" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">Edit</MudButton>
+    </YesButton>
+</MudMessageBox>
 <MudMessageBox @ref="_create_box" Title="Thêm Học Viên" CancelText="Cancel">
     <MessageContent>
         <div class="d-flex flex-column" style="width: 500px;">
             <MudTextField @bind-Value="new_student.ID" Label="ID" ShrinkLabel Variant="Variant.Outlined" />
-            <MudTextField @bind-Value="new_student.Class" Label="Tên lớp" ShrinkLabel Variant="Variant.Outlined" />
+            <MudTextField @bind-Value="new_student.Class" Label="Tên Lớp" ShrinkLabel Variant="Variant.Outlined" />
             <MudTextField @bind-Value="new_student.Name" Label="Họ và tên" ShrinkLabel Variant="Variant.Outlined" />
             <div class="d-flex flex-row">
                 <MudNumericField @bind-Value="new_student.Toan" Class="me-3" Label="Điểm Toán" Min="0" Max="10" Variant="Variant.Outlined" />
@@ -57,6 +76,7 @@
         <MudButton Class="m-3" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add">Create</MudButton>
     </YesButton>
 </MudMessageBox>
+
 
 @code {
     class Student
@@ -116,14 +136,33 @@
 
         }
     }
-    private async Task Open_delete_dialog(Student student)
+    private async Task OpenDeleteDialog(Student student)
     {
+        var result = await DialogService.ShowMessageBox("Xoá thông tin của học viên", $"Xác nhận xoá thông tin sinh viên {student.Name}", yesText: "Delete", cancelText: "Cancel");
+        if (result != true) return;
         Students.Remove(student);
         StateHasChanged();
     }
-    private async Task Open_edit_dialog(Student student)
+
+    private MudMessageBox _editBox=null!;
+    private Student editStudent = new();
+    private async Task OpenEditDialog(Student student)
     {
-        student.Tin = 0;
-        StateHasChanged();
+        editStudent.ID = student.ID;
+        editStudent.Class =student.Class;
+        editStudent.Name =student.Name;
+        editStudent.Toan = student.Toan;
+        editStudent.Anh = student.Anh;
+        editStudent.Van = student.Van;
+        editStudent.Tin = student.Tin;
+        bool? result = await _editBox.ShowAsync();
+        if (result==true)
+        {
+            student.Toan = editStudent.Toan;
+            student.Anh = editStudent.Anh;
+            student.Van = editStudent.Van;
+            student.Tin = editStudent.Tin;
+            StateHasChanged();
+        }
     }
 }
